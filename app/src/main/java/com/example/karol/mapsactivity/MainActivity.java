@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             }
         });
 
-
+        runTimer();
     }
 
     protected Dialog onCreateDialog(int id) {
@@ -409,6 +409,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 running = false;
                 seconds = 0;
                 stan = false;
+                myMap.clear();
+                dystans = 0.0;
+                // Empty the array list
+                points.clear();
                 break;
         }
 
