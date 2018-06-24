@@ -15,6 +15,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -47,6 +48,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     double v = 0.0;
     double v1 = 0.0;
     double dystans = 0;
+
+    // Czy stoper działa?
+    private boolean running;
+    private boolean wasRunning;
+    private int seconds = 0;
     ArrayList<LatLng> points = new ArrayList<LatLng>();
     static final private int ALERT_GPS = 1;
     static final private int ALERT_NETWORK = 2;
@@ -362,25 +368,27 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
         startActivity(intent);
     }
+
     public static float distFrom(double lat1, double lng1, double lat2, double lng2) {
         double earthRadius = 6371000; //meters
-        double dLat = Math.toRadians(lat2-lat1);
-        double dLng = Math.toRadians(lng2-lng1);
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lng2 - lng1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                        Math.sin(dLng/2) * Math.sin(dLng/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         float dist = (float) (earthRadius * c);
 
         return dist;
     }
+
     @OnClick({R.id.button, R.id.button2})
     public void onViewClicked(View view) {
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         String locationProvider = this.getEnabledLocationProvider();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-        return;
+            return;
         }
         locationManager.requestLocationUpdates(
                 locationProvider,
@@ -395,67 +403,95 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         switch (view.getId()) {
             case R.id.button:
-
-                try {
-
-                    LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-                    if(stan == false & myLocation.getLatitude() != 0 & myLocation.getLongitude() != 0)
-                    {
-                        MarkerOptions option = new MarkerOptions();
-                        option.title("My Location");
-                        option.snippet("....");
-                        option.position(latLng);
-                        Marker currentMarker = myMap.addMarker(option);
-                        currentMarker.showInfoWindow();
-                        stan = true;
-                    }
-                    if(v != myLocation.getLatitude() & v1 != myLocation.getLongitude())
-                    {
-                        double liczba = distFrom(v, v1, myLocation.getLatitude(), (myLocation.getLongitude()));
-                        NumberFormat formatter = new DecimalFormat("#0.00");
-                        String x=formatter.format(liczba);
-                        textView.setText("Other but less than 1 meter = " + x + "\nŁączny dystans = " + dystans + "m");
-                        if(liczba >1) {
-                            if(!(v == 0 & v1 == 0)) {
-                                dystans += liczba;
-                            }
-                            textView.setText("Other and larger than 1 meter = " + x + "m\n Łączny dystans = " + dystans + "m");
-                            v = myLocation.getLatitude();
-                            v1 = myLocation.getLongitude();
-                            PolylineOptions polylineOptions = new PolylineOptions();
-                            polylineOptions.color(Color.RED);
-                            polylineOptions.width(3);
-                            points.add(latLng);
-                            polylineOptions.addAll(points);
-                            myMap.addPolyline(polylineOptions);
-                        }
-                    }
-                    else
-                    {
-                        textView.setText("identical\nŁączny dystans = " + dystans + "m");
-                    }
-                }
-
-                catch (NullPointerException e)
-                {
-                    textView.setText("Check GPS, click again and wait...");
-                }
-
+                running = true;
                 break;
             case R.id.button2:
-                try {
-                    stan = false;
-                    myMap.clear();
-                    dystans = 0.0;
-                    // Empty the array list
-                    points.clear();
-                }catch (NullPointerException e){
-
-                }
+                running = false;
+                seconds = 0;
+                stan = false;
                 break;
         }
+
     }
-    private void runTimer() {
-        
+
+    public void runTimer() {
+
+        final TextView timeView = (TextView)findViewById(R.id.textView2);
+        final Handler handler = new Handler();
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        String locationProvider = this.getEnabledLocationProvider();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        locationManager.requestLocationUpdates(
+                locationProvider,
+                MIN_TIME_BW_UPDATES,
+                MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener) this);
+        Location myLocation = null;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        myLocation = locationManager
+                .getLastKnownLocation(locationProvider);
+        final LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+        if (stan == false & myLocation.getLatitude() != 0 & myLocation.getLongitude() != 0) {
+            MarkerOptions option = new MarkerOptions();
+            option.title("My Location");
+            option.snippet("....");
+            option.position(latLng);
+            Marker currentMarker = myMap.addMarker(option);
+            currentMarker.showInfoWindow();
+            stan = true;
+        }
+        final Location finalMyLocation = myLocation;
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                int hours = seconds/3600;
+                int minutes = (seconds%3600)/60;
+                int secs = seconds%60;
+                String time = String.format("%d:%02d:%02d", hours, minutes, secs);
+                timeView.setText(time);
+                if (running) {
+                    seconds++;
+
+
+                    try {
+
+
+                        if (v != finalMyLocation.getLatitude() & v1 != finalMyLocation.getLongitude()) {
+                            double liczba = distFrom(v, v1, finalMyLocation.getLatitude(), (finalMyLocation.getLongitude()));
+                            NumberFormat formatter = new DecimalFormat("#0.00");
+                            String x = formatter.format(liczba);
+                            textView.setText("Other but less than 1 meter = " + x + "\nŁączny dystans = " + dystans + "m");
+                            if (liczba > 1) {
+                                if (!(v == 0 & v1 == 0)) {
+                                    dystans += liczba;
+                                }
+                                textView.setText("Other and larger than 1 meter = " + x + "m\n Łączny dystans = " + dystans + "m");
+                                v = finalMyLocation.getLatitude();
+                                v1 = finalMyLocation.getLongitude();
+                                PolylineOptions polylineOptions = new PolylineOptions();
+                                polylineOptions.color(Color.RED);
+                                polylineOptions.width(3);
+                                points.add(latLng);
+                                polylineOptions.addAll(points);
+                                myMap.addPolyline(polylineOptions);
+                            }
+                        } else {
+                            textView.setText("identical\nŁączny dystans = " + dystans + "m");
+                        }
+                    } catch (NullPointerException e) {
+                        textView.setText("Check GPS, click again and wait...");
+                    }
+
+                }
+                handler.postDelayed(this, 1000);
+            }
+        });
+
+
+
     }
 }

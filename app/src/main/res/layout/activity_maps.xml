@@ -15,15 +15,6 @@
         android:layout_alignParentStart="true"
         tools:context=".MainActivity" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="69dp"
-        android:layout_toStartOf="@+id/button2"
-        android:text="TextView" />
-
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
@@ -41,4 +32,20 @@
         android:layout_alignParentTop="true"
         android:layout_marginEnd="101dp"
         android:text="Button" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/button"
+        android:layout_marginEnd="33dp"
+        android:text="TextView" />
 </RelativeLayout>
