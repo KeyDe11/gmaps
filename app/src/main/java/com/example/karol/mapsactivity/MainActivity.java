@@ -322,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             odleglosc.setText(" " + myLocation.getLatitude() + " " + myLocation.getLongitude());
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(latLng)             // Sets the center of the map to location user
-                    .zoom(20)                   // Sets the zoom
+                    .zoom(17)                   // Sets the zoom
                     .bearing(90)                // Sets the orientation of the camera to east
                     .tilt(40)                   // Sets the tilt of the camera to 30 degrees
                     .build();                   // Creates a CameraPosition from the builder
@@ -330,12 +330,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
 
             // Add Marker to Map
-            MarkerOptions option = new MarkerOptions();
+/*            MarkerOptions option = new MarkerOptions();
             option.title("My Location");
             option.snippet("....");
             option.position(latLng);
             Marker currentMarker = myMap.addMarker(option);
-            currentMarker.showInfoWindow();
+            currentMarker.showInfoWindow();*/
         } else {
             Toast.makeText(this, "Location not found!", Toast.LENGTH_LONG).show();
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -434,64 +434,77 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 String time = String.format("%d:%02d:%02d", hours, minutes, secs);
                 timeView.setText(time);
                 if (running) {
-                    seconds++;
 
+                    if(++seconds % 5 == 0) {
+                        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-                    LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-                    String locationProvider = getEnabledLocationProvider();
-                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        return;
-                    }
-                    locationManager.requestLocationUpdates(
-                            locationProvider,
-                            MIN_TIME_BW_UPDATES,
-                            MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener) MainActivity.this);
-                    Location myLocation = null;
-                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        return;
-                    }
-                    myLocation = locationManager
-                            .getLastKnownLocation(locationProvider);
-
-                    try {
-
-                        LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-                        if (stan == false & myLocation.getLatitude() != 0 & myLocation.getLongitude() != 0) {
-                            MarkerOptions option = new MarkerOptions();
-                            option.title("My Location");
-                            option.snippet("....");
-                            option.position(latLng);
-                            Marker currentMarker = myMap.addMarker(option);
-                            currentMarker.showInfoWindow();
-                            stan = true;
+                        String locationProvider = getEnabledLocationProvider();
+                        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            return;
                         }
-                        if (v != myLocation.getLatitude() & v1 != myLocation.getLongitude()) {
-                            double liczba = distFrom(v, v1, myLocation.getLatitude(), (myLocation.getLongitude()));
-                            NumberFormat formatter = new DecimalFormat("#0.00");
-                            String x = formatter.format(liczba);
+                        locationManager.requestLocationUpdates(
+                                locationProvider,
+                                MIN_TIME_BW_UPDATES,
+                                MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener) MainActivity.this);
+                        Location myLocation = null;
+                        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            return;
+                        }
+                        myLocation = locationManager
+                                .getLastKnownLocation(locationProvider);
 
-                            textView.setText("Other but less than 1 meter = " + x + "\nŁączny dystans = " + formatter.format(dystans)+ "m");
-                            if (liczba > 0.1) {
-                                if (!(v == 0 & v1 == 0)) {
-                                    dystans += liczba;
-                                }
+                        try {
 
-                                textView.setText("Other and larger than 1 meter = " + x + "m\n Łączny dystans = " + formatter.format(dystans) + "m");
-                                v = myLocation.getLatitude();
-                                v1 = myLocation.getLongitude();
-                                PolylineOptions polylineOptions = new PolylineOptions();
-                                polylineOptions.color(Color.RED);
-                                polylineOptions.width(3);
-                                points.add(latLng);
-                                polylineOptions.addAll(points);
-                                myMap.addPolyline(polylineOptions);
+                            LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+                            if (stan == false & myLocation.getLatitude() != 0 & myLocation.getLongitude() != 0) {
+                                MarkerOptions option = new MarkerOptions();
+                                option.title("START");
+                                option.position(latLng);
+                                Marker currentMarker = myMap.addMarker(option);
+                                CameraPosition cameraPosition = new CameraPosition.Builder()
+                                        .target(latLng)             // Sets the center of the map to location user
+                                        .zoom(17)                   // Sets the zoom
+                                        .bearing(90)                // Sets the orientation of the camera to east
+                                        .tilt(40)                   // Sets the tilt of the camera to 30 degrees
+                                        .build();                   // Creates a CameraPosition from the builder
+                                myMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                                currentMarker.showInfoWindow();
+                                stan = true;
                             }
-                        } else {
-                            textView.setText("identical\nŁączny dystans = " + dystans + "m");
+                            if (v != myLocation.getLatitude() & v1 != myLocation.getLongitude()) {
+                                double liczba = distFrom(v, v1, myLocation.getLatitude(), (myLocation.getLongitude()));
+                                NumberFormat formatter = new DecimalFormat("#0.00");
+                                String x = formatter.format(liczba);
+
+                                textView.setText("Other but less than 1 meter = " + x + "\nŁączny dystans = " + formatter.format(dystans) + "m");
+                                if (liczba > 1) {
+                                    if (!(v == 0 & v1 == 0)) {
+                                        dystans += liczba;
+                                    }
+
+                                    textView.setText("Other and larger than 1 meter = " + x + "m\n Łączny dystans = " + formatter.format(dystans) + "m");
+                                    v = myLocation.getLatitude();
+                                    v1 = myLocation.getLongitude();
+                                    PolylineOptions polylineOptions = new PolylineOptions();
+                                    polylineOptions.color(Color.RED);
+                                    polylineOptions.width(3);
+                                    points.add(latLng);
+                                    polylineOptions.addAll(points);
+                                    myMap.addPolyline(polylineOptions);
+                                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                                            .target(latLng)             // Sets the center of the map to location user
+                                            .zoom(17)                   // Sets the zoom
+                                            .bearing(90)                // Sets the orientation of the camera to east
+                                            .tilt(40)                   // Sets the tilt of the camera to 30 degrees
+                                            .build();                   // Creates a CameraPosition from the builder
+                                    myMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                                }
+                            } else {
+                                textView.setText("identical\nŁączny dystans = " + dystans + "m");
+                            }
+                        } catch (NullPointerException e) {
+                            textView.setText("Check GPS, click again and wait...");
                         }
-                    } catch (NullPointerException e) {
-                        textView.setText("Check GPS, click again and wait...");
                     }
                 }
                 handler.postDelayed(this, 1000);
