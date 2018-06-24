@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     Button button2;
     private GoogleMap myMap;
     private ProgressDialog myProgress;
-    TextView textView;
+    TextView odleglosc;
     private static final String MYTAG = "MYTAG";
     final long MIN_TIME_BW_UPDATES = 1000;
     // Met
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         ButterKnife.bind(this);
 
         // Create Progress Bar.
-        textView = (TextView) findViewById(R.id.textView);
+        odleglosc = (TextView) findViewById(R.id.textView);
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -318,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
             LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
             myMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
-            textView.setText(" " + myLocation.getLatitude() + " " + myLocation.getLongitude());
+            odleglosc.setText(" " + myLocation.getLatitude() + " " + myLocation.getLongitude());
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(latLng)             // Sets the center of the map to location user
                     .zoom(20)                   // Sets the zoom
@@ -421,36 +421,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void runTimer() {
 
         final TextView timeView = (TextView)findViewById(R.id.textView2);
+        final TextView timeView3 = (TextView)findViewById(R.id.textView3);
         final Handler handler = new Handler();
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        String locationProvider = this.getEnabledLocationProvider();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        locationManager.requestLocationUpdates(
-                locationProvider,
-                MIN_TIME_BW_UPDATES,
-                MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener) this);
-        Location myLocation = null;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        myLocation = locationManager
-                .getLastKnownLocation(locationProvider);
-        final LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-        if (stan == false & myLocation.getLatitude() != 0 & myLocation.getLongitude() != 0) {
-            MarkerOptions option = new MarkerOptions();
-            option.title("My Location");
-            option.snippet("....");
-            option.position(latLng);
-            Marker currentMarker = myMap.addMarker(option);
-            currentMarker.showInfoWindow();
-            stan = true;
-        }
-        final Location finalMyLocation = myLocation;
+
+
+
         handler.post(new Runnable() {
-            @Override
             public void run() {
                 int hours = seconds/3600;
                 int minutes = (seconds%3600)/60;
@@ -462,20 +439,52 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
 
                     try {
+                        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
+                        String locationProvider = this.getEnabledLocationProvider();
+                        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            return;
+                        }
+                        locationManager.requestLocationUpdates(
+                                locationProvider,
+                                MIN_TIME_BW_UPDATES,
+                                MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener) this);
+                        Location myLocation = null;
+                        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            return;
+                        }
+                        myLocation = locationManager
+                                .getLastKnownLocation(locationProvider);
+                        LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+                        if (stan == false & myLocation.getLatitude() != 0 & myLocation.getLongitude() != 0) {
+                            try {
+                                MarkerOptions option = new MarkerOptions();
+                                option.title("My Location");
+                                option.snippet("....");
+                                option.position(latLng);
+                                Marker currentMarker = myMap.addMarker(option);
+                                currentMarker.showInfoWindow();
+                                stan = true;
+                                timeView3.setText("1");
+                            }catch (NullPointerException e)
+                            {
 
-                        if (v != finalMyLocation.getLatitude() & v1 != finalMyLocation.getLongitude()) {
-                            double liczba = distFrom(v, v1, finalMyLocation.getLatitude(), (finalMyLocation.getLongitude()));
+                            }
+                        Location MyLocation = myLocation;
+                        timeView3.setText("try");
+
+                        if (v != MyLocation.getLatitude() & v1 != MyLocation.getLongitude()) {
+                            double liczba = distFrom(v, v1, MyLocation.getLatitude(), (MyLocation.getLongitude()));
                             NumberFormat formatter = new DecimalFormat("#0.00");
                             String x = formatter.format(liczba);
-                            textView.setText("Other but less than 1 meter = " + x + "\nŁączny dystans = " + dystans + "m");
+                            odleglosc.setText("Other but less than 1 meter = " + x + "\nŁączny dystans = " + dystans + "m");
                             if (liczba > 1) {
                                 if (!(v == 0 & v1 == 0)) {
                                     dystans += liczba;
                                 }
-                                textView.setText("Other and larger than 1 meter = " + x + "m\n Łączny dystans = " + dystans + "m");
-                                v = finalMyLocation.getLatitude();
-                                v1 = finalMyLocation.getLongitude();
+                                odleglosc.setText("Other and larger than 1 meter = " + x + "m\n Łączny dystans = " + dystans + "m");
+                                v = MyLocation.getLatitude();
+                                v1 = MyLocation.getLongitude();
                                 PolylineOptions polylineOptions = new PolylineOptions();
                                 polylineOptions.color(Color.RED);
                                 polylineOptions.width(3);
@@ -484,10 +493,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                                 myMap.addPolyline(polylineOptions);
                             }
                         } else {
-                            textView.setText("identical\nŁączny dystans = " + dystans + "m");
+
+
+                            odleglosc.setText("identical\nŁączny dystans = " + dystans + "m");
                         }
                     } catch (NullPointerException e) {
-                        textView.setText("Check GPS, click again and wait...");
+                        odleglosc.setText("Check GPS, click again and wait...");
                     }
 
                 }
@@ -495,7 +506,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             }
         });
 
-
+        }
 
     }
 }
