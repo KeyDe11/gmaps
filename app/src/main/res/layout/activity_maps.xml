@@ -17,12 +17,13 @@
 
     <Button
         android:id="@+id/button"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginStart="68dp"
-        android:text="Button" />
+        android:text="START" />
 
     <Button
         android:id="@+id/button2"
@@ -31,7 +32,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="101dp"
-        android:text="Button" />
+        android:text="RESET" />
 
     <TextView
         android:id="@+id/textView"

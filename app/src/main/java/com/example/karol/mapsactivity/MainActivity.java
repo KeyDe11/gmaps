@@ -36,6 +36,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.text.BreakIterator;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -420,71 +421,65 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     public void runTimer() {
 
-        final TextView timeView = (TextView)findViewById(R.id.textView2);
-        final TextView timeView3 = (TextView)findViewById(R.id.textView3);
+        final TextView timeView = (TextView) findViewById(R.id.textView2);
+        final TextView textView = (TextView) findViewById(R.id.textView);
+        final TextView timeView3 = (TextView) findViewById(R.id.textView3);
         final Handler handler = new Handler();
-
-
-
-
         handler.post(new Runnable() {
+            @Override
             public void run() {
-                int hours = seconds/3600;
-                int minutes = (seconds%3600)/60;
-                int secs = seconds%60;
+                int hours = seconds / 3600;
+                int minutes = (seconds % 3600) / 60;
+                int secs = seconds % 60;
                 String time = String.format("%d:%02d:%02d", hours, minutes, secs);
                 timeView.setText(time);
                 if (running) {
                     seconds++;
 
 
-                    try {
-                        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+                    LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-                        String locationProvider = this.getEnabledLocationProvider();
-                        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            return;
-                        }
-                        locationManager.requestLocationUpdates(
-                                locationProvider,
-                                MIN_TIME_BW_UPDATES,
-                                MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener) this);
-                        Location myLocation = null;
-                        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            return;
-                        }
-                        myLocation = locationManager
-                                .getLastKnownLocation(locationProvider);
+                    String locationProvider = getEnabledLocationProvider();
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                    locationManager.requestLocationUpdates(
+                            locationProvider,
+                            MIN_TIME_BW_UPDATES,
+                            MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener) MainActivity.this);
+                    Location myLocation = null;
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        return;
+                    }
+                    myLocation = locationManager
+                            .getLastKnownLocation(locationProvider);
+
+                    try {
+
                         LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
                         if (stan == false & myLocation.getLatitude() != 0 & myLocation.getLongitude() != 0) {
-                            try {
-                                MarkerOptions option = new MarkerOptions();
-                                option.title("My Location");
-                                option.snippet("....");
-                                option.position(latLng);
-                                Marker currentMarker = myMap.addMarker(option);
-                                currentMarker.showInfoWindow();
-                                stan = true;
-                                timeView3.setText("1");
-                            }catch (NullPointerException e)
-                            {
-
-                            }
-                        Location MyLocation = myLocation;
-                        timeView3.setText("try");
-
-                        if (v != MyLocation.getLatitude() & v1 != MyLocation.getLongitude()) {
-                            double liczba = distFrom(v, v1, MyLocation.getLatitude(), (MyLocation.getLongitude()));
+                            MarkerOptions option = new MarkerOptions();
+                            option.title("My Location");
+                            option.snippet("....");
+                            option.position(latLng);
+                            Marker currentMarker = myMap.addMarker(option);
+                            currentMarker.showInfoWindow();
+                            stan = true;
+                        }
+                        if (v != myLocation.getLatitude() & v1 != myLocation.getLongitude()) {
+                            double liczba = distFrom(v, v1, myLocation.getLatitude(), (myLocation.getLongitude()));
                             NumberFormat formatter = new DecimalFormat("#0.00");
                             String x = formatter.format(liczba);
-                            odleglosc.setText("Other but less than 1 meter = " + x + "\nŁączny dystans = " + dystans + "m");
-                            if (liczba > 1) {
+
+                            textView.setText("Other but less than 1 meter = " + x + "\nŁączny dystans = " + formatter.format(dystans)+ "m");
+                            if (liczba > 0.1) {
                                 if (!(v == 0 & v1 == 0)) {
                                     dystans += liczba;
                                 }
-                                odleglosc.setText("Other and larger than 1 meter = " + x + "m\n Łączny dystans = " + dystans + "m");
-                                v = MyLocation.getLatitude();
-                                v1 = MyLocation.getLongitude();
+
+                                textView.setText("Other and larger than 1 meter = " + x + "m\n Łączny dystans = " + formatter.format(dystans) + "m");
+                                v = myLocation.getLatitude();
+                                v1 = myLocation.getLongitude();
                                 PolylineOptions polylineOptions = new PolylineOptions();
                                 polylineOptions.color(Color.RED);
                                 polylineOptions.width(3);
@@ -493,20 +488,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                                 myMap.addPolyline(polylineOptions);
                             }
                         } else {
-
-
-                            odleglosc.setText("identical\nŁączny dystans = " + dystans + "m");
+                            textView.setText("identical\nŁączny dystans = " + dystans + "m");
                         }
                     } catch (NullPointerException e) {
-                        odleglosc.setText("Check GPS, click again and wait...");
+                        textView.setText("Check GPS, click again and wait...");
                     }
-
                 }
                 handler.postDelayed(this, 1000);
             }
         });
-
-        }
-
     }
 }
