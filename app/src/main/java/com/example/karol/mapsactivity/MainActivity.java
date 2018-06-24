@@ -35,14 +35,19 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
+    double v = 0.0;
+    double v1 = 0.0;
+    double dystans = 0;
+    ArrayList<LatLng> points = new ArrayList<LatLng>();
     static final private int ALERT_GPS = 1;
     static final private int ALERT_NETWORK = 2;
     @BindView(R.id.button)
@@ -79,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         }
 
-        textView.setText("else");
+        //textView.setText("else");
         myProgress = new ProgressDialog(this);
         myProgress.setTitle("Map Loading ...");
         myProgress.setMessage("Please wait...");
@@ -371,7 +376,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
         startActivity(intent);
     }
+    public static float distFrom(double lat1, double lng1, double lat2, double lng2) {
+        double earthRadius = 6371000; //meters
+        double dLat = Math.toRadians(lat2-lat1);
+        double dLng = Math.toRadians(lng2-lng1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLng/2) * Math.sin(dLng/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        float dist = (float) (earthRadius * c);
 
+        return dist;
+    }
     @OnClick({R.id.button, R.id.button2})
     public void onViewClicked(View view) {
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -404,70 +420,109 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
         myLocation = locationManager
                 .getLastKnownLocation(locationProvider);
-        ArrayList<LatLng> points = new ArrayList<LatLng>();
+
         switch (view.getId()) {
             case R.id.button:
 
                 try {
+
                     LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+                    if(stan == false & myLocation.getLatitude() != 0 & myLocation.getLongitude() != 0)
+                    {
+                        MarkerOptions option = new MarkerOptions();
+                        option.title("My Location");
+                        option.snippet("....");
+                        option.position(latLng);
+                        Marker currentMarker = myMap.addMarker(option);
+                        currentMarker.showInfoWindow();
+                        stan = true;
+                    }
+                    if(v != myLocation.getLatitude() & v1 != myLocation.getLongitude())
+                    {
+                        double liczba = distFrom(v, v1, myLocation.getLatitude(), (myLocation.getLongitude()));
+                        NumberFormat formatter = new DecimalFormat("#0.00");
+                        String x=formatter.format(liczba);
+                        textView.setText("Other but less than 1 meter = " + x + "\nŁączny dystans = " + dystans + "m");
+                        if(liczba >1) {
+                            if(!(v == 0 & v1 == 0)) {
+                                dystans += liczba;
+                            }
+                            textView.setText("Other and larger than 1 meter = " + x + "m\n Łączny dystans = " + dystans + "m");
+                            v = myLocation.getLatitude();
+                            v1 = myLocation.getLongitude();
+
+//                        // Add Marker to Map
+//                        MarkerOptions option = new MarkerOptions();
+//                        option.title("My Location");
+//                        option.snippet("....");
+//                        option.position(latLng);
+//                        MarkerOptions markerOptions = new MarkerOptions();
+//
+//                        // Setting latitude and longitude of the marker position
+//                        markerOptions.position(latLng);
+//
+//                        // Setting titile of the infowindow of the marker
+//                        markerOptions.title("Position");
+//
+//                        // Setting the content of the infowindow of the marker
+//                        markerOptions.snippet("Latitude:"+latLng.latitude+","+"Longitude:"+latLng.longitude);
+
+                            // Instantiating the class PolylineOptions to plot polyline in the map
+                            PolylineOptions polylineOptions = new PolylineOptions();
+
+                            // Setting the color of the polyline
+                            polylineOptions.color(Color.RED);
+
+                            // Setting the width of the polyline
+                            polylineOptions.width(3);
+
+                            // Adding the taped point to the ArrayList
+                            points.add(latLng);
+
+
+                            // Setting points of polyline
+                            polylineOptions.addAll(points);
+
+                            // Adding the polyline to the map
+                            myMap.addPolyline(polylineOptions);
+
+                            // Adding the marker to the map
+                            //myMap.addMarker(markerOptions);
+
+
+/*                        Marker currentMarker = myMap.addMarker(option);
+                        currentMarker.showInfoWindow();*/
+                        }
+                    }
+                    else
+                    {
+                        textView.setText("identical\nŁączny dystans = " + dystans + "m");
+
+
+                    }
+
                     //textView.setText("" + myLocation.getLatitude() + "\n" + myLocation.getLongitude());
 
-
-                    // Add Marker to Map
-                    MarkerOptions option = new MarkerOptions();
-                    option.title("My Location");
-                    option.snippet("....");
-                    option.position(latLng);
-                    MarkerOptions markerOptions = new MarkerOptions();
-
-                    // Setting latitude and longitude of the marker position
-                    markerOptions.position(latLng);
-
-                    // Setting titile of the infowindow of the marker
-                    markerOptions.title("Position");
-
-                    // Setting the content of the infowindow of the marker
-                    markerOptions.snippet("Latitude:"+latLng.latitude+","+"Longitude:"+latLng.longitude);
-
-                    // Instantiating the class PolylineOptions to plot polyline in the map
-                    PolylineOptions polylineOptions = new PolylineOptions();
-
-                    // Setting the color of the polyline
-                    polylineOptions.color(Color.RED);
-
-                    // Setting the width of the polyline
-                    polylineOptions.width(3);
-
-                    // Adding the taped point to the ArrayList
-                    points.add(latLng);
-                    textView.setText(points.toString());
-
-                    // Setting points of polyline
-                    polylineOptions.addAll(points);
-
-                    // Adding the polyline to the map
-                    myMap.addPolyline(polylineOptions);
-
-                    // Adding the marker to the map
-                    myMap.addMarker(markerOptions);
-
-
-                    Marker currentMarker = myMap.addMarker(option);
-                    currentMarker.showInfoWindow();
                 }
 
                 catch (NullPointerException e)
                 {
+
                     textView.setText("Check GPS, click again and wait...");
                 }
 
                 break;
             case R.id.button2:
-                LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
-                myMap.clear();
+                try {
+                    stan = false;
+                    myMap.clear();
+                    dystans = 0.0;
+                    // Empty the array list
+                    points.clear();
+                }catch (NullPointerException e){
 
-                // Empty the array list
-                points.clear();
+                }
+
                 break;
         }
     }
