@@ -188,13 +188,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         myMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         //myMap.getUiSettings().setZoomControlsEnabled(true);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
         myMap.setMyLocationEnabled(true);
@@ -339,13 +332,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         } else {
             Toast.makeText(this, "Location not found!", Toast.LENGTH_LONG).show();
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return;
             }
             myMap.setMyLocationEnabled(true);
@@ -394,14 +380,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         String locationProvider = this.getEnabledLocationProvider();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
+        return;
         }
         locationManager.requestLocationUpdates(
                 locationProvider,
@@ -409,13 +388,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 MIN_DISTANCE_CHANGE_FOR_UPDATES, (LocationListener) this);
         Location myLocation = null;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
         myLocation = locationManager
@@ -450,64 +422,22 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                             textView.setText("Other and larger than 1 meter = " + x + "m\n Łączny dystans = " + dystans + "m");
                             v = myLocation.getLatitude();
                             v1 = myLocation.getLongitude();
-
-//                        // Add Marker to Map
-//                        MarkerOptions option = new MarkerOptions();
-//                        option.title("My Location");
-//                        option.snippet("....");
-//                        option.position(latLng);
-//                        MarkerOptions markerOptions = new MarkerOptions();
-//
-//                        // Setting latitude and longitude of the marker position
-//                        markerOptions.position(latLng);
-//
-//                        // Setting titile of the infowindow of the marker
-//                        markerOptions.title("Position");
-//
-//                        // Setting the content of the infowindow of the marker
-//                        markerOptions.snippet("Latitude:"+latLng.latitude+","+"Longitude:"+latLng.longitude);
-
-                            // Instantiating the class PolylineOptions to plot polyline in the map
                             PolylineOptions polylineOptions = new PolylineOptions();
-
-                            // Setting the color of the polyline
                             polylineOptions.color(Color.RED);
-
-                            // Setting the width of the polyline
                             polylineOptions.width(3);
-
-                            // Adding the taped point to the ArrayList
                             points.add(latLng);
-
-
-                            // Setting points of polyline
                             polylineOptions.addAll(points);
-
-                            // Adding the polyline to the map
                             myMap.addPolyline(polylineOptions);
-
-                            // Adding the marker to the map
-                            //myMap.addMarker(markerOptions);
-
-
-/*                        Marker currentMarker = myMap.addMarker(option);
-                        currentMarker.showInfoWindow();*/
                         }
                     }
                     else
                     {
                         textView.setText("identical\nŁączny dystans = " + dystans + "m");
-
-
                     }
-
-                    //textView.setText("" + myLocation.getLatitude() + "\n" + myLocation.getLongitude());
-
                 }
 
                 catch (NullPointerException e)
                 {
-
                     textView.setText("Check GPS, click again and wait...");
                 }
 
@@ -522,8 +452,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 }catch (NullPointerException e){
 
                 }
-
                 break;
         }
+    }
+    private void runTimer() {
+        
     }
 }
